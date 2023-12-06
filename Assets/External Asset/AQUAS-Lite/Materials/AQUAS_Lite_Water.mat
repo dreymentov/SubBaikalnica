@@ -129,10 +129,10 @@ Material:
     - __dirty: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _DeepWaterColor: {r: 0.24973297, g: 0.632423, b: 0.8679245, a: 1}
+    - _DeepWaterColor: {r: 0.2736739, g: 0.42956525, b: 0.4716981, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FoamColor: {r: 0.28648984, g: 0.5386693, b: 0.5471698, a: 1}
     - _FogColor: {r: 1, g: 1, b: 1, a: 1}
-    - _MainColor: {r: 0.3443396, g: 1, b: 0.7602436, a: 1}
-    - _SpecularColor: {r: 0.9716981, g: 0.9139198, b: 0.7104397, a: 1}
+    - _MainColor: {r: 0.3340157, g: 0.509434, b: 0.50108075, a: 1}
+    - _SpecularColor: {r: 0.4772606, g: 0.7075472, b: 0.66973895, a: 1}
   m_BuildTextureStacks: []
