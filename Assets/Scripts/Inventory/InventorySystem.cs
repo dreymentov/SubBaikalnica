@@ -3,25 +3,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class InventorySystem : MonoBehaviour
 {
     public static InventorySystem Instance { get; private set; }
 
-    private Grid grid;
+    private Grid<GridObject> grid;
 
     int gridWidth = 6;
     int gridHeight = 8;
     float cellSize = 100f;
 
-    //list of all items in inventory
+    //list of all items in the inventory
     public List<ItemScriptableObject> inventoryList = new List<ItemScriptableObject>();
 
     public GameObject inventoryTab;
     public GameObject uiPrefab;
     public bool inventoryOpen;
 
+    public GameObject cam;
+
+    public float playerReach;
+
     public ItemScriptableObject fillerItem;
+
+    [SerializeField] private Transform spawnPoint;
 
     // Start is called before the first frame update
     void Awake()
@@ -32,10 +39,13 @@ public class InventorySystem : MonoBehaviour
         GridObject.uiPrefab = uiPrefab;
 
         //create the grid
-        grid = new Grid(gridWidth, gridHeight, cellSize, new Vector3(0, 0, 0), (Grid g, int x, int y) => new GridObject(g, x, y));
+        grid = new Grid<GridObject>(gridWidth, gridHeight, cellSize, new Vector3(0, 0, 0), (Grid<GridObject> g, int x, int y) => new GridObject(g, x, y));
+
+        SortItems();
     }
 
-    private void Update()
+    // Update is called once per frame
+    void Update()
     {
         if (Input.GetKeyDown(KeyCode.Tab))
         {
@@ -51,14 +61,89 @@ public class InventorySystem : MonoBehaviour
             }
             inventoryOpen = !inventoryOpen;
         }
+
+        InteractableObject i = HoverObject();
+
+        if(i!= null)
+        {
+            //check if the player left clicks
+            if (Input.GetMouseButtonDown(0))
+            {
+                //pickup item
+                PickUpItem(i);
+            }
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
+                foreach(GameObject currentObj in hoveredObj.hovered)
+                {
+                    InteractableObject io = currentObj.GetComponent<InteractableObject>();
+                    if(io != null)
+                    {
+                        Debug.Log("remove " + io.item.name);
+                        RemoveItem(io.item);
+                        break;
+                    }
+                }
+            }
+        }
     }
+
+    #region Interacting with items
+
+    InteractableObject HoverObject()
+    {
+        RaycastHit hit;
+        if(Physics.Raycast(cam.transform.position,cam.transform.forward, out hit, playerReach))
+        {
+            return hit.collider.gameObject.GetComponent<InteractableObject>();
+        }
+
+        return null;
+    }
+
+    //called when you pick up something
+    void PickUpItem(InteractableObject itemPicked)
+    {
+        inventoryList.Add(itemPicked.item);
+
+        //sort inventory
+        if(SortItems() == false)
+        {
+            //remove it from the inventory list
+            inventoryList.Remove(itemPicked.item);
+
+            //error
+            Debug.Log("inventory full!");
+
+            return;
+        }
+
+        //if all goes well, destroy the object
+        Destroy(itemPicked.gameObject);
+    }
+
+    //remove object from inventory and spawn it in the world
+    void RemoveItem(ItemScriptableObject item)
+    {
+        inventoryList.Remove(item);
+        SortItems();
+        GameObject g = Instantiate(item.worldPrefab, spawnPoint.position, Quaternion.identity);
+        g.GetComponent<InteractableObject>().picked = true;
+    }
+
+    #endregion
 
     #region Functions to sort the inventory
 
     //assign items to gidobjects
     void AssignItemToSpot(ItemScriptableObject item, List<Vector2> coords)
     {
-        for (int i = 0; i < coords.Count; i++)
+        for (int i = 0; i<coords.Count; i++)
         {
             int x = (int)coords[i].x;
             int y = (int)coords[i].y;
@@ -81,7 +166,7 @@ public class InventorySystem : MonoBehaviour
     void ResetTempValues()
     {
         Debug.Log("reset temp");
-        foreach (GridObject obj in grid.gridArray)
+        foreach(GridObject obj in grid.gridArray)
         {
             obj.ClearTemp();
         }
@@ -97,7 +182,7 @@ public class InventorySystem : MonoBehaviour
             for (int y = 0; y > -item.size.y; y--)
             {
                 //if one of the coords is out of bounds, return false
-                if ((x + gridCoordinate.x) >= gridWidth || (gridCoordinate.y + y) >= gridHeight)
+                if((x + gridCoordinate.x) >= gridWidth || (gridCoordinate.y + y) >= gridHeight)
                 {
                     return false;
                 }
@@ -107,9 +192,9 @@ public class InventorySystem : MonoBehaviour
         }
 
         //check all the coordinates
-        foreach (Vector2 coord in coordsToCheck)
+        foreach(Vector2 coord in coordsToCheck)
         {
-            if (!grid.GetGridObject((int)coord.x, (int)coord.y).EmptyTemp())
+            if(!grid.GetGridObject((int)coord.x, (int)coord.y).EmptyTemp())
             {
                 //if there is something in one of these coordinates, return false
                 return false;
@@ -126,26 +211,26 @@ public class InventorySystem : MonoBehaviour
     {
         for (int y = gridHeight - 1; y >= 0; y--)
         {
-            for (int x = 0; x < gridWidth; x++)
+            for(int x = 0; x < gridWidth; x++)
             {
                 //check if the spot is empty
                 if (grid.GetGridObject(x, y).EmptyTemp())
                 {
                     //check if size one
-                    if (item.size == Vector2.one)
+                    if(item.size == Vector2.one)
                     {
                         AssignItemToSpot(item, x, y);
                         return true;
                     }
                     else
                     {
-                        if (CheckIfFits(item, new Vector2(x, y)))
+                        if(CheckIfFits(item,new Vector2(x, y)))
                         {
                             return true;
                         }
                     }
                 }
-
+                
             }
         }
 
@@ -182,6 +267,6 @@ public class InventorySystem : MonoBehaviour
         return true;
 
     }
-
+    
     #endregion
 }

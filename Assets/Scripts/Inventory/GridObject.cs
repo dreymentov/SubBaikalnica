@@ -7,7 +7,7 @@ public class GridObject
 {
     public static GameObject inventoryTab;
     public static GameObject uiPrefab;
-    private Grid grid;
+    private Grid<GridObject> grid;
     public int x;
     public int y;
     private GameObject itemImage;
@@ -16,7 +16,7 @@ public class GridObject
     public ItemScriptableObject tempItem;
 
     //class constructor
-    public GridObject(Grid grid, int x, int y)
+    public GridObject(Grid<GridObject> grid, int x, int y)
     {
         this.grid = grid;
         this.x = x;
@@ -33,7 +33,7 @@ public class GridObject
     public void SetItem(ItemScriptableObject item)
     {
         this.item = item;
-        if (itemImage == null)
+        if(itemImage == null)
         {
             itemImage = GameObject.Instantiate(uiPrefab, new Vector3(0, 0, 0) * grid.GetCellSize(), Quaternion.identity, inventoryTab.transform);
         }
