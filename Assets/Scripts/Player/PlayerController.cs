@@ -1,16 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
     //reference the transform
     Transform t;
 
+    public static PlayerController Instance { get; private set; }
+
     InventorySystem iSystem;
+    CraftingManager cm;
 
     public static bool inWater;
     public static bool isSwimming;
+    public bool isCrafting;
     //if not in water, walk
     //if in water and not swimming, float
     //if in water and swimming, swim
@@ -36,22 +41,45 @@ public class PlayerController : MonoBehaviour
 
     Rigidbody rb;
 
+    [Header("Player Interactiion")]
+    public GameObject cam;
+    public Transform dropItemPoint;
+    public float playerReach;
+    public InteractableObject currentHoverObject;
+
+    //hotbar
+    public List<KeyCode> hotbarKeys;
+    int itemHeld = -1;
+    List<HotbarSlot> hotbar;
+    public Transform hand;
+
     // Start is called before the first frame update
     void Start()
     {
+        Instance = this;
+
         rb = GetComponent<Rigidbody>();
         t = this.transform;
 
         Cursor.lockState = CursorLockMode.Locked;
 
         inWater = false;
+        isCrafting = false;
 
         iSystem = InventorySystem.Instance;
+        cm = CraftingManager.Instance;
+
+        iSystem.dropItemPoint = dropItemPoint;
+        InteractableObject.pc = Instance;
+
+        hotbarKeys = iSystem.hotbarKeys;
+        hotbar = iSystem.hotbar;
+        HotbarSlot.hand = hand;
     }
 
     private void FixedUpdate()
     {
-        if (!iSystem.inventoryOpen)
+        if (!UIBaseClass.menuOpen)
         {
             SwimmingOrFloating();
             Move();
@@ -60,6 +88,14 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if(other.gameObject.tag == "Crafting")
+        {
+            cm.SetTable(currentHoverObject);
+            cm.ToggleMenu();
+
+            isCrafting = true;
+        }
+
         SwitchMovement();
     }
 
@@ -104,16 +140,49 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!iSystem.inventoryOpen)
-        {
-            LookAround();
-        }
-        
-
         //debug function to unlock cursor
         if (Input.GetKey(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
+        }
+
+        if(UIBaseClass.menuOpen)
+        {
+            return;
+        }
+
+        LookAround();
+
+        currentHoverObject = HoverObject();
+
+        if (currentHoverObject != null)
+        {
+            //currentHoverObject.Highlight();
+
+            if (/*currentHoverObject.interactable && */ Input.GetMouseButtonDown(0))
+            {
+                if(currentHoverObject.tag == "Crafting")
+                {
+                    cm.SetTable(currentHoverObject);
+                    cm.ToggleMenu();
+                    return;
+                }
+                else
+                {
+                    iSystem.PickUpItem(currentHoverObject);
+                }
+            }
+        }
+
+        for (int key = 0; key < 5; key++)
+        {
+            PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
+            
+            if (Input.GetKeyDown(hotbarKeys[key]))
+            {
+                HoldItem(key);
+                break;
+            }
         }
     }
 
@@ -182,4 +251,51 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+
+    #region Interaction Functions
+
+    InteractableObject HoverObject()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, playerReach))
+        {
+            return hit.collider.gameObject.GetComponent<InteractableObject>();
+        }
+
+        return null;
+    }
+
+    public void ExitFromCraft()
+    {
+        cm.ToggleMenu();
+    }
+
+    void HoldItem(int slotNum)
+    {
+        if(itemHeld == slotNum)
+        {
+            Debug.Log("Hide");
+            itemHeld = -1;
+            hotbar[slotNum].HideItem();
+            return;
+        }
+
+        if(itemHeld != -1)
+        {
+            hotbar[itemHeld].HideItem();
+        }
+
+        hotbar[slotNum].DisplayItem();
+        itemHeld = slotNum;
+    }
+
+    public void HideHotbaritem()
+    {
+        if(itemHeld != -1)
+        {
+            hotbar[itemHeld].HideItem();
+            itemHeld = -1;
+        }
+    }
+    #endregion
 }

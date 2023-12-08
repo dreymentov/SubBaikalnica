@@ -5,6 +5,7 @@ using UnityEngine;
 public class InteractableObject : MonoBehaviour
 {
     public ItemScriptableObject item;
+    public static PlayerController pc;
     public bool picked;
 
     void Start()

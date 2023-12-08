@@ -6,8 +6,14 @@ using UnityEngine;
 public class ItemScriptableObject : ScriptableObject
 {
     public int id;
+    public itemCategories itemType;
     public string itemName;
     public Vector2 size; //how many across x and how many across y
     public Sprite sprite;
     public GameObject worldPrefab;
+
+    public enum itemCategories
+    {
+        Generic, Tool, SmallFauna, Placeable, Equiptable
+    }
 }

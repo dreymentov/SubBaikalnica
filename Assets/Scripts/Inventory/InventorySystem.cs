@@ -5,8 +5,9 @@ using System.Linq;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class InventorySystem : MonoBehaviour
+public class InventorySystem : UIBaseClass
 {
+    public InteractableObject io;
     public static InventorySystem Instance { get; private set; }
 
     private Grid<GridObject> grid;
@@ -28,8 +29,18 @@ public class InventorySystem : MonoBehaviour
 
     public ItemScriptableObject fillerItem;
 
+    public Transform dropItemPoint;
+
     [SerializeField] private Transform spawnPoint;
 
+    [Header("Hotbar")]
+    public List<HotbarSlot> hotbar;
+    public List<KeyCode> hotbarKeys;
+    public Sprite blankSprite;
+
+    public GameObject hotbarHolder;
+
+    public InteractableObject i;
     // Start is called before the first frame update
     void Awake()
     {
@@ -42,6 +53,10 @@ public class InventorySystem : MonoBehaviour
         grid = new Grid<GridObject>(gridWidth, gridHeight, cellSize, new Vector3(0, 0, 0), (Grid<GridObject> g, int x, int y) => new GridObject(g, x, y));
 
         SortItems();
+
+        //sm = StorageManager.Instance;
+
+        HotbarSlot.blankSprite = blankSprite;
     }
 
     // Update is called once per frame
@@ -62,7 +77,7 @@ public class InventorySystem : MonoBehaviour
             inventoryOpen = !inventoryOpen;
         }
 
-        InteractableObject i = HoverObject();
+        i = HoverObject();
 
         if(i!= null)
         {
@@ -74,22 +89,59 @@ public class InventorySystem : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButtonDown(1))
+
+        if (Input.GetMouseButtonDown(1))// && (CurrentmenuIsThis() || CurrentmenuIsThis(/*sm.menu*/)))
         {
-            if (EventSystem.current.IsPointerOverGameObject())
+            PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
+            io = null;
+
+            foreach (GameObject currentObj in hoveredObj.hovered)
             {
-                PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
-                foreach(GameObject currentObj in hoveredObj.hovered)
-                {
-                    InteractableObject io = currentObj.GetComponent<InteractableObject>();
-                    if(io != null)
-                    {
-                        Debug.Log("remove " + io.item.name);
-                        RemoveItem(io.item);
-                        break;
-                    }
-                }
+                io = currentObj.GetComponent<InteractableObject>();
             }
+
+            Debug.Log(io);
+
+            if (io == null)
+            {
+                return;
+            }
+
+            RemoveItem(io.item);
+
+            CheckHotbar();
+        }
+
+        for(int key = 0; key < 5; key ++)
+        {
+            PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
+            io = null;
+
+            foreach (GameObject currentObj in hoveredObj.hovered)
+            {
+                io = currentObj.GetComponent<InteractableObject>();
+            }
+
+            if (Input.GetKeyDown(hotbarKeys[key]))
+            {
+                AssignItemToHotbar(io.item, key);
+                break;
+            }
+        }
+
+        if (!menuOpen)
+        {
+            hotbarHolder.SetActive(true);
+            return;
+        }
+    
+        if (!CurrentmenuIsThis())
+        {
+            hotbarHolder.SetActive(false);
+        }
+        else
+        {
+            hotbarHolder.SetActive(true);
         }
     }
 
@@ -107,7 +159,7 @@ public class InventorySystem : MonoBehaviour
     }
 
     //called when you pick up something
-    void PickUpItem(InteractableObject itemPicked)
+    public void PickUpItem(InteractableObject itemPicked)
     {
         inventoryList.Add(itemPicked.item);
 
@@ -128,7 +180,7 @@ public class InventorySystem : MonoBehaviour
     }
 
     //remove object from inventory and spawn it in the world
-    void RemoveItem(ItemScriptableObject item)
+    public void RemoveItem(ItemScriptableObject item)
     {
         inventoryList.Remove(item);
         SortItems();
@@ -136,6 +188,46 @@ public class InventorySystem : MonoBehaviour
         g.GetComponent<InteractableObject>().picked = true;
     }
 
+    public void RemoveItem(List<ItemScriptableObject> items)
+    {
+        for(int i = 0; i < items.Count; i++)
+        {
+            inventoryList.Remove(items[i]);
+        }
+        SortItems();
+    }
+
+    #endregion
+
+    #region Hotbar Functions
+    public bool IsHotbarEquippable(ItemScriptableObject item)
+    {
+        return item.itemType != ItemScriptableObject.itemCategories.Generic;
+    }
+
+    public void AssignItemToHotbar(ItemScriptableObject item, int slotNum)
+    {
+        if (!IsHotbarEquippable(item))
+        {
+            return;
+        }
+
+        if (hotbar[slotNum].hotbarInventoryItemIdentifier == item)
+        {
+            hotbar[slotNum].SetSlot(null);
+            return;
+        }
+
+        for(int i = 0; i < 5; i++)
+        {
+            if (hotbar[i].hotbarInventoryItemIdentifier == item)
+            {
+                hotbar[i].SetSlot(null);
+            }
+        }
+
+        hotbar[slotNum].SetSlot(item);
+    }
     #endregion
 
     #region Functions to sort the inventory
@@ -267,6 +359,25 @@ public class InventorySystem : MonoBehaviour
         return true;
 
     }
-    
+
     #endregion
+
+    public override void CloseMenuFunctions()
+    {
+        foreach (HotbarSlot slot in hotbar)
+        {
+            slot.SpawnHotbarItems();
+        }
+    }
+
+    public void CheckHotbar()
+    {
+        for(int slotNum = 0; slotNum < 5; slotNum++)
+        {
+            if (!inventoryList.Contains(hotbar[slotNum].hotbarInventoryItemIdentifier))
+            {
+                hotbar[slotNum].SetSlot(null);
+            }
+        }
+    }
 }
