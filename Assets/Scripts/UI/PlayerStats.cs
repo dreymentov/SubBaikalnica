@@ -4,9 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class PlayerStats : MonoBehaviour
+public class PlayerStats : Health
 {
-    public List<int> maxStats; //0 is oxygen, 1 is food, 2 is thirst, 3 is health
+    [SerializeField] private Transform player;
+
+    public List<int> maxStats; //0 is oxygen, 1 is food, 2 is thirst
     List<int> currentStats;
 
     Coroutine oxygenCo;
@@ -18,11 +20,24 @@ public class PlayerStats : MonoBehaviour
     [Header("UI")]
     public List<Slider> statBars;
     public List<TextMeshProUGUI> statNums;
-    [SerializeField] private GameObject seaEffect;
+    public GameObject panelUnderwater;
+    public TextMeshProUGUI textDepthMeter;
+    public GameObject panelMessage;
+    public TextMeshProUGUI textMessage;
+
+    private void Reset()
+    {
+        maxStats = new List<int>(new int[3] { 30, 100, 100 });
+        currentHealth = maxHealth = 100;
+        Canvas c = FindObjectOfType<Canvas>();
+        statBars = new List<Slider>(c.GetComponentsInChildren<Slider>());
+        statNums = new List<TextMeshProUGUI>(c.GetComponentsInChildren<TextMeshProUGUI>());
+    }
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
+        currentHealth = maxHealth;
         //initialise currentStats to the max amount
         currentStats = new List<int>(maxStats);
 
@@ -35,6 +50,10 @@ public class PlayerStats : MonoBehaviour
         {
             statBars[i].maxValue = maxStats[i];
         }
+        statBars[3].maxValue = maxHealth;
+
+        //disable panel underwater in awake
+        panelUnderwater.SetActive(false);
     }
 
     // Update is called once per frame
@@ -42,23 +61,48 @@ public class PlayerStats : MonoBehaviour
     {
         if (!PlayerController.isSwimming && swimCheck == true)
         {
-            seaEffect.SetActive(false); //–≤—ã–∫–ª—é—á–∏—Ç—å –≥–æ–ª—É–±–∏–∑–Ω—É –Ω–∞ UI
+            panelUnderwater.SetActive(false);
             swimCheck = false;
             StopCoroutine(oxygenCo);
             ChangeStat(0, maxStats[0]);
         }
         if (PlayerController.isSwimming && swimCheck == false)
         {
-            seaEffect.SetActive(true); //–≤–∫–ª—é—á–∏—Ç—å –≥–æ–ª—É–±–∏–∑–Ω—É –Ω–∞ UI
+            panelUnderwater.SetActive(true);
             swimCheck = true;
             oxygenCo = StartCoroutine(DecreaseStats(0, 3, 3));
         }
 
+        if (PlayerController.isSwimming)
+        {
+            textDepthMeter.text = "√ÎÛ·ËÌ‡: " + (int)player.position.y*2 +"Ï";
+        }
+        else
+        {
+            textDepthMeter.text = "√ÎÛ·ËÌ‡: " + "Ì‡ ÒÛ¯Â";
+        }
+
         //displaye currentstats in stat ui
-        for(int i = 0; i < maxStats.Count; i++)
+        for (int i = 0; i < maxStats.Count; i++)
         {
             statBars[i].value = currentStats[i];
             statNums[i].text = currentStats[i].ToString();
+        }
+        statBars[3].value = currentHealth;
+        statNums[3].text = currentHealth.ToString();
+
+        if(Input.GetKeyDown(KeyCode.Return))
+        {
+            if (panelMessage.gameObject.activeInHierarchy == false)
+            {
+                panelMessage.gameObject.SetActive(true);
+                textMessage.gameObject.SetActive(true);
+            }
+            else
+            {
+                panelMessage.gameObject.SetActive(false);
+                textMessage.gameObject.SetActive(false);
+            }
         }
     }
 

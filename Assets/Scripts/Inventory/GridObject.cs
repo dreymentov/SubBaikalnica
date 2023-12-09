@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class GridObject
 {
-    public static GameObject inventoryTab;
     public static GameObject uiPrefab;
     private Grid<GridObject> grid;
     public int x;
@@ -30,17 +29,18 @@ public class GridObject
     }
 
     //changes what object placed in this grid object
-    public void SetItem(ItemScriptableObject item)
+    public void SetItem(ItemScriptableObject item, InventorySystem iSystem)
     {
         this.item = item;
         if(itemImage == null)
         {
-            itemImage = GameObject.Instantiate(uiPrefab, new Vector3(0, 0, 0) * grid.GetCellSize(), Quaternion.identity, inventoryTab.transform);
+            itemImage = GameObject.Instantiate(uiPrefab, new Vector3(0, 0, 0) * grid.GetCellSize(), Quaternion.identity, iSystem.menu.transform);
         }
         itemImage.GetComponentInChildren<Image>().sprite = item.sprite;
         itemImage.GetComponentsInChildren<RectTransform>()[1].sizeDelta = grid.GetCellSize() * item.size;
         itemImage.GetComponent<RectTransform>().anchoredPosition = new Vector3(x, y, 0) * grid.GetCellSize();
-        itemImage.GetComponentInChildren<InteractableObject>().item = item;
+        itemImage.GetComponentInChildren<InteractableUIObject>().item = item;
+        itemImage.GetComponentInChildren<InteractableUIObject>().storageBox = iSystem;
         itemImage.SetActive(true);
         //trigger event handler
         grid.TriggerGridObjectChanged(x, y);
@@ -90,12 +90,12 @@ public class GridObject
         return tempItem;
     }
 
-    public void SetTempAsReal()
+    public void SetTempAsReal(InventorySystem iSystem)
     {
         ClearItem();
         if (!EmptyTemp())
         {
-            SetItem(tempItem);
+            SetItem(tempItem, iSystem);
         }
         ClearTemp();
     }

@@ -153,7 +153,7 @@ TextureImporter:
       213: 21300098
     second: IconSpritesheet_49
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 11
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -170,12 +170,10 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
-    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -214,12 +212,10 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 1
-  swizzle: 50462976
-  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 512
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -227,59 +223,18 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
-    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
     buildTarget: Standalone
     maxTextureSize: 4096
     resizeAlgorithm: 0
-    textureFormat: 12
+    textureFormat: -1
     textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 1
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: Server
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: Android
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -1345,59 +1300,9 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable:
-      IconSpritesheet_0: 21300000
-      IconSpritesheet_1: 21300002
-      IconSpritesheet_10: 21300020
-      IconSpritesheet_11: 21300022
-      IconSpritesheet_12: 21300024
-      IconSpritesheet_13: 21300026
-      IconSpritesheet_14: 21300028
-      IconSpritesheet_15: 21300030
-      IconSpritesheet_16: 21300032
-      IconSpritesheet_17: 21300034
-      IconSpritesheet_18: 21300036
-      IconSpritesheet_19: 21300038
-      IconSpritesheet_2: 21300004
-      IconSpritesheet_20: 21300040
-      IconSpritesheet_21: 21300042
-      IconSpritesheet_22: 21300044
-      IconSpritesheet_23: 21300046
-      IconSpritesheet_24: 21300048
-      IconSpritesheet_25: 21300050
-      IconSpritesheet_26: 21300052
-      IconSpritesheet_27: 21300054
-      IconSpritesheet_28: 21300056
-      IconSpritesheet_29: 21300058
-      IconSpritesheet_3: 21300006
-      IconSpritesheet_30: 21300060
-      IconSpritesheet_31: 21300062
-      IconSpritesheet_32: 21300064
-      IconSpritesheet_33: 21300066
-      IconSpritesheet_34: 21300068
-      IconSpritesheet_35: 21300070
-      IconSpritesheet_36: 21300072
-      IconSpritesheet_37: 21300074
-      IconSpritesheet_38: 21300076
-      IconSpritesheet_39: 21300078
-      IconSpritesheet_4: 21300008
-      IconSpritesheet_40: 21300080
-      IconSpritesheet_41: 21300082
-      IconSpritesheet_42: 21300084
-      IconSpritesheet_43: 21300086
-      IconSpritesheet_44: 21300088
-      IconSpritesheet_45: 21300090
-      IconSpritesheet_46: 21300092
-      IconSpritesheet_47: 21300094
-      IconSpritesheet_48: 21300096
-      IconSpritesheet_49: 21300098
-      IconSpritesheet_5: 21300010
-      IconSpritesheet_6: 21300012
-      IconSpritesheet_7: 21300014
-      IconSpritesheet_8: 21300016
-      IconSpritesheet_9: 21300018
-  mipmapLimitGroupName: 
+  spritePackingTag: 
   pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

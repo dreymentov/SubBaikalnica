@@ -1,52 +1,48 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
-using UnityEngine.UI;
+using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class InventorySystem : UIBaseClass
 {
-    public InteractableObject io;
     public static InventorySystem Instance { get; private set; }
 
-    private Grid<GridObject> grid;
+    internal Grid<GridObject> grid;
 
-    int gridWidth = 6;
-    int gridHeight = 8;
-    float cellSize = 100f;
+    internal int gridWidth = 6;
+    internal int gridHeight = 8;
+    internal float cellSize = 100f;
 
     //list of all items in the inventory
-    public List<ItemScriptableObject> inventoryList = new List<ItemScriptableObject>();
+    public List<ItemScriptableObject> itemsList = new List<ItemScriptableObject>();
 
-    public GameObject inventoryTab;
     public GameObject uiPrefab;
-    public bool inventoryOpen;
-
-    public GameObject cam;
-
-    public float playerReach;
-
     public ItemScriptableObject fillerItem;
-
+    //StorageManager sm;
     public Transform dropItemPoint;
-
-    [SerializeField] private Transform spawnPoint;
 
     [Header("Hotbar")]
     public List<HotbarSlot> hotbar;
     public List<KeyCode> hotbarKeys;
     public Sprite blankSprite;
-
     public GameObject hotbarHolder;
 
-    public InteractableObject i;
+    [Header("Gear Slots")]
+    public List<GearScriptableObject> gearSlots = new List<GearScriptableObject>(5); // 0 is body, 1 is helmet, 2 is flipper, 3 is tank, 4 and 5 are upgrade slots
+    public List<Image> gearSlotUI;
+    public GameObject gearMenu;
+    public GearUniversalFunctions guf;
+
+    //event that tells scripts when the inventory is sorted
+    public delegate void InventoryUpdated();
+    public event InventoryUpdated OnInventoryUpdated;
+
     // Start is called before the first frame update
     void Awake()
     {
         Instance = this;
 
-        GridObject.inventoryTab = inventoryTab;
         GridObject.uiPrefab = uiPrefab;
 
         //create the grid
@@ -57,85 +53,26 @@ public class InventorySystem : UIBaseClass
         //sm = StorageManager.Instance;
 
         HotbarSlot.blankSprite = blankSprite;
+
     }
 
     // Update is called once per frame
-    void Update()
+    internal virtual void Update()
     {
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            if (!inventoryOpen)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                inventoryTab.SetActive(true);
-            }
-            else
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                inventoryTab.SetActive(false);
-            }
-            inventoryOpen = !inventoryOpen;
+            ToggleMenu();
         }
 
-        i = HoverObject();
-
-        if(i!= null)
-        {
-            //check if the player left clicks
-            if (Input.GetMouseButtonDown(0))
-            {
-                //pickup item
-                PickUpItem(i);
-            }
-        }
-
-
-        if (Input.GetMouseButtonDown(1))// && (CurrentmenuIsThis() || CurrentmenuIsThis(/*sm.menu*/)))
-        {
-            PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
-            io = null;
-
-            foreach (GameObject currentObj in hoveredObj.hovered)
-            {
-                io = currentObj.GetComponent<InteractableObject>();
-            }
-
-            Debug.Log(io);
-
-            if (io == null)
-            {
-                return;
-            }
-
-            RemoveItem(io.item);
-
-            CheckHotbar();
-        }
-
-        for(int key = 0; key < 5; key ++)
-        {
-            PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
-            io = null;
-
-            foreach (GameObject currentObj in hoveredObj.hovered)
-            {
-                io = currentObj.GetComponent<InteractableObject>();
-            }
-
-            if (Input.GetKeyDown(hotbarKeys[key]))
-            {
-                AssignItemToHotbar(io.item, key);
-                break;
-            }
-        }
-
+        //only run the code if the menu is open
         if (!menuOpen)
         {
             hotbarHolder.SetActive(true);
             return;
         }
-    
-        if (!CurrentmenuIsThis())
+
+        //toggle hotbar
+        if (!CurrentMenuIsThis())
         {
             hotbarHolder.SetActive(false);
         }
@@ -143,90 +80,211 @@ public class InventorySystem : UIBaseClass
         {
             hotbarHolder.SetActive(true);
         }
+
+        //check whats hovered
+        PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
+        InteractableUIObject io = null;
+
+        foreach( GameObject currentObj in hoveredObj.hovered)
+        {
+            io = currentObj.GetComponent<InteractableUIObject>();
+        }
+
+        //if not hovering over anything, return
+        if(io == null)
+        {
+            return;
+        }
+
+        //movement stuff
+        if(Input.GetMouseButtonDown(0) && (CurrentMenuIsThis() /*|| CurrentMenuIsThis(sm.menu)*/))
+        {
+            //move item from one storage space to another
+            io.storageBox.MoveItem(io.item);
+        }
+
+        if (Input.GetMouseButtonDown(1) && CurrentMenuIsThis())
+        {
+            DropItem(io.item);
+        }
+
+        //hotbar keypressing detection
+        for (int key = 0; key < 5; key++)
+        {
+            if (Input.GetKeyDown(hotbarKeys[key]))
+            {
+                Debug.Log("hotbar " + key);
+
+                //assign item to hotbar
+                AssignItemToHotbar(io.item, key);
+                break;
+            }
+        }
     }
 
     #region Interacting with items
 
-    InteractableObject HoverObject()
-    {
-        RaycastHit hit;
-        if(Physics.Raycast(cam.transform.position,cam.transform.forward, out hit, playerReach))
-        {
-            return hit.collider.gameObject.GetComponent<InteractableObject>();
-        }
-
-        return null;
-    }
-
-    //called when you pick up something
+    //called when you pick up something from the world
     public void PickUpItem(InteractableObject itemPicked)
     {
-        inventoryList.Add(itemPicked.item);
+        if (AddItem(itemPicked.item))
+        {
+            //if all goes well, destroy the object
+            Destroy(itemPicked.gameObject);
+        }
+    }
+
+    //move from the current inventory system from the other
+    public virtual void MoveItem(ItemScriptableObject item)
+    {
+        //if we are not in a storage menu
+        if (CurrentMenuIsThis())
+        {
+            //if the item is gear
+            if (item.itemType == ItemScriptableObject.itemCategories.Gear)
+            {
+                //attempt to equip, but if cant, add item back
+                if (!EquipGear(item as GearScriptableObject))
+                {
+                    Debug.Log("cannot equip gear");
+                }
+            }
+            //if the item isnt gear, or cannot be equipped as gear, do nothing
+            return;
+        }
+
+        //functions for if moving between storages
+
+        RemoveItem(item);
+
+        Debug.Log("otherside sorting");
+        /*if (!StorageManager.Instance.AddItem(item))
+        {
+            Debug.Log("cannot fit in storage");
+            AddItem(item);
+            return;
+        }*/
+
+        //so the function doesnt run unessesarily
+        if(item.itemType == ItemScriptableObject.itemCategories.Tool)
+        {
+            CheckHotbar();
+        }
+    }
+
+    public void DropItem(ItemScriptableObject item)
+    {
+        RemoveItem(item);
+
+        //spawn in the world
+        GameObject spawnedItem = Instantiate(item.worldPrefab, dropItemPoint.position, Quaternion.identity);
+        spawnedItem.GetComponent<InteractableObject>().FreezeMovement(false);
+
+        if (item.itemType == ItemScriptableObject.itemCategories.Tool)
+        {
+            CheckHotbar();
+        }
+        return;
+    }
+
+    //add an item to the current inventory
+    public bool AddItem(ItemScriptableObject itemAdded)
+    {
+        itemsList.Add(itemAdded);
 
         //sort inventory
-        if(SortItems() == false)
+        if (SortItems() == false)
         {
             //remove it from the inventory list
-            inventoryList.Remove(itemPicked.item);
+            itemsList.Remove(itemAdded);
 
             //error
             Debug.Log("inventory full!");
 
-            return;
+            return false;
         }
 
-        //if all goes well, destroy the object
-        Destroy(itemPicked.gameObject);
+        return true;
     }
 
-    //remove object from inventory and spawn it in the world
+    //remove object from current inventory
     public void RemoveItem(ItemScriptableObject item)
     {
-        inventoryList.Remove(item);
+        itemsList.Remove(item);
         SortItems();
-        GameObject g = Instantiate(item.worldPrefab, spawnPoint.position, Quaternion.identity);
-        g.GetComponent<InteractableObject>().picked = true;
     }
 
+    //remove multiple items at once
     public void RemoveItem(List<ItemScriptableObject> items)
     {
         for(int i = 0; i < items.Count; i++)
         {
-            inventoryList.Remove(items[i]);
+            itemsList.Remove(items[i]);
         }
         SortItems();
+    }
+
+    //function for deploying items
+    public void DeployItem(ItemScriptableObject item)
+    {
+        RemoveItem(item);
+
+        //spawn in the world
+        Instantiate(item.worldPrefab, dropItemPoint.position, Quaternion.identity);
+        CheckHotbar();
+        return;
     }
 
     #endregion
 
     #region Hotbar Functions
+
     public bool IsHotbarEquippable(ItemScriptableObject item)
     {
         return item.itemType != ItemScriptableObject.itemCategories.Generic;
     }
 
+    //function to assign or disassign hotbar slots and has assigning logic for the slots
     public void AssignItemToHotbar(ItemScriptableObject item, int slotNum)
     {
+        //exits function if the item is not equipable to the hotbar
         if (!IsHotbarEquippable(item))
         {
             return;
         }
 
-        if (hotbar[slotNum].hotbarInventoryItemIdentifier == item)
+        //if same as current obj, disassign the hotbarslot.
+        if(hotbar[slotNum].hotbarInventoryItemIdentifier == item)
         {
             hotbar[slotNum].SetSlot(null);
             return;
         }
 
+        //if object is in a different hotbarslot, disassign that slot
         for(int i = 0; i < 5; i++)
         {
-            if (hotbar[i].hotbarInventoryItemIdentifier == item)
+            if(hotbar[i].hotbarInventoryItemIdentifier == item)
             {
                 hotbar[i].SetSlot(null);
             }
         }
 
+        //assign to hotbar slot
         hotbar[slotNum].SetSlot(item);
+    }
+
+    public void CheckHotbar()
+    {
+        for(int slotNum = 0; slotNum < 5; slotNum++)
+        {
+            if (!itemsList.Contains(hotbar[slotNum].hotbarInventoryItemIdentifier))
+            {
+                hotbar[slotNum].SetSlot(null);
+
+                //reset the slot spawned items
+                hotbar[slotNum].SpawnHotbarItems();
+            }
+        }
     }
     #endregion
 
@@ -255,7 +313,7 @@ public class InventorySystem : UIBaseClass
         grid.GetGridObject(x, y).SetTemp(item);
     }
 
-    void ResetTempValues()
+    internal void ResetTempValues()
     {
         Debug.Log("reset temp");
         foreach(GridObject obj in grid.gridArray)
@@ -274,7 +332,7 @@ public class InventorySystem : UIBaseClass
             for (int y = 0; y > -item.size.y; y--)
             {
                 //if one of the coords is out of bounds, return false
-                if((x + gridCoordinate.x) >= gridWidth || (gridCoordinate.y + y) >= gridHeight)
+                if((x + gridCoordinate.x) >= gridWidth || (gridCoordinate.y + y) >= gridHeight || (x + gridCoordinate.x) < 0 || (gridCoordinate.y + y) < 0)
                 {
                     return false;
                 }
@@ -299,7 +357,7 @@ public class InventorySystem : UIBaseClass
     }
 
     //check through every spot to find the next available spot
-    bool AvailSpot(ItemScriptableObject item)
+    internal bool AvailSpot(ItemScriptableObject item)
     {
         for (int y = gridHeight - 1; y >= 0; y--)
         {
@@ -316,7 +374,7 @@ public class InventorySystem : UIBaseClass
                     }
                     else
                     {
-                        if(CheckIfFits(item,new Vector2(x, y)))
+                        if(CheckIfFits(item as ItemScriptableObject,new Vector2(x, y)))
                         {
                             return true;
                         }
@@ -332,12 +390,12 @@ public class InventorySystem : UIBaseClass
 
     //function returns true if all items can be sorted, and sorts them properly
     //returns false if items cannot be sorted and deletes all the temporary values
-    bool SortItems()
+    internal virtual bool SortItems()
     {
-        Debug.Log("SortItems");
+        //Debug.Log("SortItems");
 
         //sort items by size
-        var sortedList = inventoryList.OrderByDescending(s => s.size.x * s.size.y);
+        var sortedList = itemsList.OrderByDescending(s => s.size.x * s.size.y);
 
         //place items systematically
         foreach (ItemScriptableObject item in sortedList)
@@ -353,31 +411,121 @@ public class InventorySystem : UIBaseClass
 
         foreach (GridObject obj in grid.gridArray)
         {
-            obj.SetTempAsReal();
+            obj.SetTempAsReal(Instance);
         }
 
+        //everytime we sort items, call an event
+        if(OnInventoryUpdated != null)
+        {
+            OnInventoryUpdated();
+        }
         return true;
-
     }
 
     #endregion
 
-    public override void CloseMenuFunctions()
+    #region Gear Equipping Functions
+
+    public bool EquipGear(GearScriptableObject gear) //logic for which slot to put a gear into
     {
-        foreach (HotbarSlot slot in hotbar)
+        int gearInt = (int)gear.gearType;
+        Debug.Log(gearInt);
+
+        //remove gear from inventory
+        RemoveItem(gear);
+
+        //determine what kind of gear it is
+        if(gear.gearType == GearScriptableObject.GearCategories.Upgrade)
         {
-            slot.SpawnHotbarItems();
+            //check if slot 4 is empty. If it is not, set to slot 5
+            //when the code continues, if 5 is empty, it sets it as 5
+            //if 5 is not empty, unequip 5 and set it as the new 5.
+            //when both slots are full, it will default to swapping out the 5 slot.
+            if(gearSlots[4] != null)
+            {
+                gearInt = 5;
+            }
         }
+
+        //if not empty, add back equipped gear into inventory
+        //because all gears of the same type have the same size, there is no problem when swapping gear.
+        if (gearSlots[gearInt] != null)
+        {
+            AddItem(gearSlots[gearInt]);
+        }
+
+        //add the gear to the gearslot
+        SetGear(gear,gearInt);
+
+        guf.ActivateGearFunctions();
+        
+        return false;
     }
 
-    public void CheckHotbar()
+    //is put on each button on the gear menu ui
+    public void UnequipGear(int gearInt) //function to remove a gear from gear slots
     {
-        for(int slotNum = 0; slotNum < 5; slotNum++)
+        //check inventory for space, put gear back in
+        if (AddItem(gearSlots[gearInt]))
         {
-            if (!inventoryList.Contains(hotbar[slotNum].hotbarInventoryItemIdentifier))
-            {
-                hotbar[slotNum].SetSlot(null);
-            }
+            SetGear(null, gearInt);
+
+            guf.ActivateGearFunctions();
+        }
+
+
+    }
+
+    public void SetGear(GearScriptableObject gear, int gearInt) //set up a gears functionality and UI in the gear menu 
+    {
+        Debug.Log("gear set");
+        //if its already the same gear, do nothing
+        if (gearSlots[gearInt] == gear)
+        {
+            
+            return;
+        }
+
+        //unequip prev gear
+        //if (gearSlots[gearInt] != null)
+        //{
+        //    gearSlots[gearInt].worldPrefab.GetComponent<GearBaseClass>().currentlyEquipped = false;
+        //}
+
+        //sets the gear in the slot
+        gearSlots[gearInt] = gear;
+
+        //updates the gear ui to display whats equipped
+        Image currentGearSlot = gearSlotUI[gearInt];
+
+        if (gearSlots[gearInt] == null)
+        {
+            currentGearSlot.sprite = null;
+            currentGearSlot.gameObject.SetActive(false);
+            return;
+        }
+
+        currentGearSlot.sprite = gear.sprite;
+        currentGearSlot.gameObject.SetActive(true);
+
+        
+    }
+
+    #endregion
+
+    public override void OpenMenuFunctions()
+    {
+        gearMenu.SetActive(true);
+    }
+
+    public override void CloseMenuFunctions()
+    {
+        gearMenu.SetActive(false);
+        //initialise hot bar items
+        foreach (HotbarSlot slot in hotbar)
+        {
+            //Debug.Log("spawn items");
+            slot.SpawnHotbarItems();
         }
     }
 }

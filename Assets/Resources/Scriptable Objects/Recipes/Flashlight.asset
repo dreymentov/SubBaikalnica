@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0b606226bdf12249ab2704c3a1b1cce, type: 3}
+  m_Name: Flashlight
+  m_EditorClassIdentifier: 
+  ingredients:
+  - {fileID: 11400000, guid: ee1bd72f6898e584f965fa2d25d7cd20, type: 2}
+  - {fileID: 11400000, guid: 004a06a4243ff5b42ac0f40a2629290e, type: 2}
+  - {fileID: 11400000, guid: 01d24d4d0cda6c146bccc489b276f432, type: 2}
+  craftedItem: {fileID: 11400000, guid: be77ced9ae4b824408ee274d28143b9e, type: 2}
+  cookingTime: 2
+  category: 1

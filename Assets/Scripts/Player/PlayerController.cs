@@ -1,21 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour
 {
     //reference the transform
     Transform t;
-
     public static PlayerController Instance { get; private set; }
 
     InventorySystem iSystem;
+    //StorageManager sm;
     CraftingManager cm;
 
     public static bool inWater;
     public static bool isSwimming;
-    public bool isCrafting;
     //if not in water, walk
     //if in water and not swimming, float
     //if in water and swimming, swim
@@ -34,14 +33,22 @@ public class PlayerController : MonoBehaviour
     float rotationY;
 
     [Header("Player Movement")]
-    public float speed = 1;
+    public float baseSpeed = 1;
+    float speed;
+    public float swimSpeedBonus = 0;
+    public float walkSpeedBonus = 0;
+    public List<float> SwimBonuses = new List<float>();
+    public List<float> WalkBonuses = new List<float>();
     float moveX;
     float moveY;
     float moveZ;
 
     Rigidbody rb;
 
-    [Header("Player Interactiion")]
+    [Header("Player Animation")]
+    public Animator playerAnim;
+
+    [Header("Player Interaction")]
     public GameObject cam;
     public Transform dropItemPoint;
     public float playerReach;
@@ -49,12 +56,15 @@ public class PlayerController : MonoBehaviour
 
     //hotbar
     public List<KeyCode> hotbarKeys;
-    int itemHeld = -1;
+    int itemHeld = -1; // -1 means nothing held. the other positions correspond to hotbar slots.
     List<HotbarSlot> hotbar;
     public Transform hand;
 
+    //crosshair
+    public GameObject crosshair;
+
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         Instance = this;
 
@@ -64,17 +74,22 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
 
         inWater = false;
-        isCrafting = false;
 
         iSystem = InventorySystem.Instance;
+        //sm = StorageManager.Instance;
         cm = CraftingManager.Instance;
 
         iSystem.dropItemPoint = dropItemPoint;
         InteractableObject.pc = Instance;
+        ToolBaseClass.pc = Instance;
+        ToolBaseClass.iSystem = iSystem;
+        GearUniversalFunctions.pc = Instance;
 
         hotbarKeys = iSystem.hotbarKeys;
         hotbar = iSystem.hotbar;
         HotbarSlot.hand = hand;
+
+        //playerAnim = GetComponent<Animator>();
     }
 
     private void FixedUpdate()
@@ -88,53 +103,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.tag == "Crafting")
-        {
-            cm.SetTable(currentHoverObject);
-            cm.ToggleMenu();
-
-            isCrafting = true;
-        }
-
         SwitchMovement();
     }
 
     private void OnTriggerExit(Collider other)
     {
         SwitchMovement();
-    }
-
-    void SwitchMovement()
-    {
-        //toggle inWater
-        inWater = !inWater;
-
-        //change the rigidbody accordingly.
-        rb.useGravity = !rb.useGravity;
-    }
-
-    void SwimmingOrFloating()
-    {
-        bool swimCheck = false;
-
-        if (inWater)
-        {
-            RaycastHit hit;
-            if(Physics.Raycast(new Vector3(t.position.x,t.position.y + 0.5f,t.position.z),Vector3.down,out hit, Mathf.Infinity, waterMask))
-            {
-                if(hit.distance < 0.1f)
-                {
-                    swimCheck = true;
-                }
-            }
-            else
-            {
-                swimCheck = true;
-            }
-        }
-
-        isSwimming = swimCheck;
-        //Debug.Log("isSwiming = " + isSwimming);
     }
 
     // Update is called once per frame
@@ -146,45 +120,85 @@ public class PlayerController : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
         }
 
-        if(UIBaseClass.menuOpen)
+        //stop all functions if a menu is open
+        if (UIBaseClass.menuOpen)
         {
             return;
         }
 
         LookAround();
 
+        UpdateAnim();
+
+        //interacting with items
         currentHoverObject = HoverObject();
 
-        if (currentHoverObject != null)
+        if(currentHoverObject != null)
         {
-            //currentHoverObject.Highlight();
+            //display name
 
-            if (/*currentHoverObject.interactable && */ Input.GetMouseButtonDown(0))
+            //outline
+            currentHoverObject.Highlight();
+
+            //check if the player left clicks
+            if(currentHoverObject.interactable && Input.GetMouseButtonDown(0))
             {
-                if(currentHoverObject.tag == "Crafting")
-                {
-                    cm.SetTable(currentHoverObject);
-                    cm.ToggleMenu();
-                    return;
-                }
-                else
-                {
-                    iSystem.PickUpItem(currentHoverObject);
-                }
+                InteractWithObject();
             }
         }
 
+        DetectHotbarKeypress();
+    }
+
+    #region Update Functions
+
+    void InteractWithObject()
+    {
+        //open storage
+        /*if (currentHoverObject.tag == "Storage")
+        {
+            sm.SetStorage(currentHoverObject);
+            sm.ToggleMenu();
+            return;
+        }
+        else*/ if (currentHoverObject.tag == "Crafting")
+        {
+            cm.SetTable(currentHoverObject);
+            cm.ToggleMenu();
+            return;
+        }
+        else if (currentHoverObject.tag == "PickUp")
+        {
+            iSystem.PickUpItem(currentHoverObject);
+        }
+    }
+
+    void DetectHotbarKeypress()
+    {
+        //hotbar keypressing detection
         for (int key = 0; key < 5; key++)
         {
-            PointerEventData hoveredObj = ExtendedStandaloneInputModule.GetPointerEventData();
-            
             if (Input.GetKeyDown(hotbarKeys[key]))
             {
+                Debug.Log("hotbar " + key);
+
+                //assign item to hotbar
                 HoldItem(key);
                 break;
             }
         }
     }
+
+    void UpdateAnim()
+    {
+        playerAnim.SetBool("inWater", inWater);
+        playerAnim.SetFloat("moveX", moveX);
+        playerAnim.SetFloat("moveZ", moveZ);
+    }
+
+    #endregion
+
+    #region Movement Functions
 
     void LookAround()
     {
@@ -195,12 +209,24 @@ public class PlayerController : MonoBehaviour
         //clamp the y rotation
         rotationY = Mathf.Clamp(rotationY, rotationMin, rotationMax);
 
-        //setting the rotation value every update
-        t.localRotation = Quaternion.Euler(-rotationY, rotationX, 0);
+        if (inWater)
+        {
+            cam.transform.localRotation = Quaternion.identity;
+
+            //setting the rotation value every update
+            t.localRotation = Quaternion.Euler(-rotationY, rotationX, 0);
+        }
+        else
+        {
+            cam.transform.localRotation = Quaternion.Euler(-rotationY, 0, 0);
+            t.localRotation = Quaternion.Euler(0, rotationX, 0);
+        }
     }
 
     void Move()
     {
+        CheckSpeedBoost();
+
         //get the movement input
         moveX = Input.GetAxis("Horizontal");
         moveY = Input.GetAxis("Vertical");
@@ -210,9 +236,12 @@ public class PlayerController : MonoBehaviour
         if (inWater)
         {
             rb.velocity = new Vector2(0,0);
+            speed = baseSpeed + swimSpeedBonus;
         }
         else
         {
+            speed = baseSpeed + walkSpeedBonus;
+
             //check if the player is standing still
             if(moveX == 0 && moveZ == 0)
             {
@@ -252,8 +281,65 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    #region Interaction Functions
+    void SwitchMovement()
+    {
+        //toggle inWater
+        inWater = !inWater;
 
+        //change the rigidbody accordingly.
+        rb.useGravity = !rb.useGravity;
+    }
+
+    void SwimmingOrFloating()
+    {
+        bool swimCheck = false;
+
+        if (inWater)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(new Vector3(t.position.x, t.position.y + 0.5f, t.position.z), Vector3.down, out hit, Mathf.Infinity, waterMask))
+            {
+                if (hit.distance < 0.1f)
+                {
+                    swimCheck = true;
+                }
+            }
+            else
+            {
+                swimCheck = true;
+            }
+        }
+
+        isSwimming = swimCheck;
+        //Debug.Log("isSwiming = " + isSwimming);
+    }
+
+    public void CheckSpeedBoost()
+    {
+        walkSpeedBonus = 0;
+        swimSpeedBonus = 0;
+
+        //list of conditions of what gives speed boosts. add conditions here as needed.
+
+        //swimming conditions
+        if(itemHeld != -1 && hotbar[itemHeld].tool != null && hotbar[itemHeld].tool.GetType() == typeof(Seaglide))
+        {
+            swimSpeedBonus += Seaglide.speedBonus;
+        }
+        foreach(int i in SwimBonuses)
+        {
+            swimSpeedBonus += i;
+        }
+
+        //walking conditions
+        foreach (int i in WalkBonuses)
+        {
+            walkSpeedBonus += i;
+        }
+    }
+    #endregion
+
+    #region Interaction Functions
     InteractableObject HoverObject()
     {
         RaycastHit hit;
@@ -265,37 +351,45 @@ public class PlayerController : MonoBehaviour
         return null;
     }
 
-    public void ExitFromCraft()
-    {
-        cm.ToggleMenu();
-    }
-
     void HoldItem(int slotNum)
     {
-        if(itemHeld == slotNum)
+        //if already holding this item, toggle equip
+        if (itemHeld == slotNum)
         {
-            Debug.Log("Hide");
             itemHeld = -1;
             hotbar[slotNum].HideItem();
             return;
         }
 
-        if(itemHeld != -1)
+        //disable other held items
+        if (itemHeld != -1)
         {
             hotbar[itemHeld].HideItem();
         }
 
+        //display item in hand
         hotbar[slotNum].DisplayItem();
         itemHeld = slotNum;
+
+        Debug.Log("currently held item is a " + hotbar[itemHeld].tool + " tool.");
     }
 
     public void HideHotbaritem()
     {
-        if(itemHeld != -1)
+        if (itemHeld != -1)
         {
             hotbar[itemHeld].HideItem();
             itemHeld = -1;
         }
+    }
+
+    public HotbarSlot CurrentHotbarItem()
+    {
+        if(itemHeld == -1)
+        {
+            return null;
+        }
+        return hotbar[itemHeld];
     }
     #endregion
 }

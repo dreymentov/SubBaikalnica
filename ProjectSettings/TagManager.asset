@@ -5,15 +5,17 @@ TagManager:
   serializedVersion: 2
   tags:
   - Ground
+  - Storage
   - Crafting
+  - PickUp
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Water Surface
   - Water
   - UI
-  - Front
+  - 
   - 
   - 
   - 
@@ -42,7 +44,4 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: Higher
-    uniqueID: 3363649805
     locked: 0
