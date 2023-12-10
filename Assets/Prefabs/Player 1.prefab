@@ -321,8 +321,8 @@ MonoBehaviour:
   - {fileID: 0}
   panelUnderwater: {fileID: 0}
   textDepthMeter: {fileID: 0}
-  panelMessage: {fileID: 0}
-  textMessage: {fileID: 0}
+  panelMessageStart: {fileID: 0}
+  textMessageStart: {fileID: 0}
 --- !u!1001 &1298534402540686226
 PrefabInstance:
   m_ObjectHideFlags: 0

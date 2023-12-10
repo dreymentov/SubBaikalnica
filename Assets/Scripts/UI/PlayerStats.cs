@@ -22,8 +22,14 @@ public class PlayerStats : Health
     public List<TextMeshProUGUI> statNums;
     public GameObject panelUnderwater;
     public TextMeshProUGUI textDepthMeter;
-    public GameObject panelMessage;
-    public TextMeshProUGUI textMessage;
+    public static GameObject panelMessage;
+    public static TextMeshProUGUI textMessage;
+    public static string testStr;
+    public GameObject panelMessageStart;
+    public TextMeshProUGUI textMessageStart;
+
+    bool isInvoked;
+    bool isInvokedToClose;
 
     private void Reset()
     {
@@ -54,6 +60,14 @@ public class PlayerStats : Health
 
         //disable panel underwater in awake
         panelUnderwater.SetActive(false);
+
+        panelMessage = panelMessageStart;
+        textMessage = textMessageStart;
+
+        isInvoked = false;
+        isInvokedToClose = false;
+
+        testStr = "Мир: Добро пожаловать в игру!";
     }
 
     // Update is called once per frame
@@ -93,15 +107,19 @@ public class PlayerStats : Health
 
         if(Input.GetKeyDown(KeyCode.Return))
         {
-            if (panelMessage.gameObject.activeInHierarchy == false)
+            if (isInvoked == false)
             {
-                panelMessage.gameObject.SetActive(true);
-                textMessage.gameObject.SetActive(true);
+                isInvoked = true;
+                StartCoroutine(ShowMessage(testStr));
             }
-            else
+        }
+
+        if(panelMessage.activeInHierarchy == true)
+        {
+            if (isInvokedToClose == false)
             {
-                panelMessage.gameObject.SetActive(false);
-                textMessage.gameObject.SetActive(false);
+                isInvokedToClose = true;
+                StartCoroutine(CloseMessage());
             }
         }
     }
@@ -129,5 +147,27 @@ public class PlayerStats : Health
         {
             currentStats[stat] = Mathf.Max(currentStats[stat] + refreshAmount, 0);
         }
+    }
+
+    IEnumerator ShowMessage(string textMsg)
+    {
+        textMessage.text = textMsg;
+        panelMessage.gameObject.SetActive(true);
+        textMessage.gameObject.SetActive(true);
+        yield return new WaitForSeconds(5f);
+        panelMessage.gameObject.SetActive(false);
+        textMessage.gameObject.SetActive(false);
+        isInvoked = false;
+        yield break;
+    }
+
+    IEnumerator CloseMessage()
+    {
+        yield return new WaitForSeconds(5f);
+        panelMessage.gameObject.SetActive(false);
+        textMessage.gameObject.SetActive(false);
+        isInvoked = false;
+        isInvokedToClose = false;
+        yield break;
     }
 }

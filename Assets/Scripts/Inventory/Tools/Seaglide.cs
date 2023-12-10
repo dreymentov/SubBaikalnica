@@ -4,5 +4,5 @@ using UnityEngine;
 
 public class Seaglide : ToolBaseClass
 {
-    public static float speedBonus = 3f;
+    public static float speedBonus = 5f;
 }

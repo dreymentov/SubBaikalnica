@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ce8c5473c617fa4bbf854f89adae254, type: 3}
-  m_Name: Fried Fish
+  m_Name: Seaglide
   m_EditorClassIdentifier: 
-  id: 11
+  id: 999
   itemType: 1
   size: {x: 1, y: 1}
-  sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  worldPrefab: {fileID: 4760247886176670627, guid: a17a3c6c131db7d459ae500bcb5be04e, type: 3}
+  sprite: {fileID: 759695541241931541, guid: 81f6861e3134b534abc7577e1c6bf286, type: 3}
+  worldPrefab: {fileID: 8175704146847461129, guid: f455a11b6c1190743a31a01e91acfacd, type: 3}
   description: 
   scannable: 0
   scanPercentage: 0

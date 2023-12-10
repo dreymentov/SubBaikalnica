@@ -176,6 +176,7 @@ GameObject:
   - component: {fileID: -1242931052703595429}
   - component: {fileID: 4929888572761639325}
   - component: {fileID: -2862690710274886776}
+  - component: {fileID: -6866715028236062295}
   m_Layer: 0
   m_Name: Flashlight 1
   m_TagString: PickUp
@@ -272,3 +273,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf585e1139d42094b9870453a2e93956, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-6866715028236062295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4153811709145368746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cca76789f347996409a4dcae133c62f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightSource: {fileID: 0}

@@ -316,6 +316,8 @@ public class PlayerController : MonoBehaviour
 
     public void CheckSpeedBoost()
     {
+        
+
         walkSpeedBonus = 0;
         swimSpeedBonus = 0;
 
@@ -324,6 +326,7 @@ public class PlayerController : MonoBehaviour
         //swimming conditions
         if(itemHeld != -1 && hotbar[itemHeld].tool != null && hotbar[itemHeld].tool.GetType() == typeof(Seaglide))
         {
+            Debug.Log("Checking speed");
             swimSpeedBonus += Seaglide.speedBonus;
         }
         foreach(int i in SwimBonuses)

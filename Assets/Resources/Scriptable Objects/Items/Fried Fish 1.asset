@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Fried Fish 1
   m_EditorClassIdentifier: 
   id: 11
-  itemType: 4
+  itemType: 1
   size: {x: 1, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 4760247886176670627, guid: a17a3c6c131db7d459ae500bcb5be04e, type: 3}

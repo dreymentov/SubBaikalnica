@@ -18,6 +18,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9fb04423fe0b3de4a8d2318e5686b35e, type: 2}
   - {fileID: 11400000, guid: 59e987b9e5d0f3747816acddfe147492, type: 2}
   - {fileID: 11400000, guid: 59e987b9e5d0f3747816acddfe147492, type: 2}
-  craftedItem: {fileID: 11400000, guid: d4ba7e53825ae4342b1a79f983c37fdb, type: 2}
+  craftedItem: {fileID: 11400000, guid: 9ec7cdcde689df046a42e730b1976cf9, type: 2}
   cookingTime: 2
   category: 2
