@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Battery
   m_EditorClassIdentifier: 
   id: 5
-  itemType: 0
+  itemType: 5
   size: {x: 1, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 6533680193293140114, guid: 9547d8e519e7730429ccfa675fa6e39e, type: 3}

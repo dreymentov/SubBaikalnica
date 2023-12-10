@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Wire Of Copper
   m_EditorClassIdentifier: 
   id: 7
-  itemType: 0
+  itemType: 5
   size: {x: 1, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 721389541161023179, guid: ad70006c9bc661744831689bf4886d71, type: 3}

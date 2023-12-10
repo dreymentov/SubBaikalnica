@@ -15,6 +15,6 @@ MonoBehaviour:
   ingredients:
   - {fileID: 11400000, guid: 59032f1f0a5db894eb9f5fdb26c3108f, type: 2}
   - {fileID: 11400000, guid: 59032f1f0a5db894eb9f5fdb26c3108f, type: 2}
-  craftedItem: {fileID: 11400000, guid: 714b12963a7bd55478d98b44f47148ce, type: 2}
+  craftedItem: {fileID: 11400000, guid: 0c26738c536ff514fb225900f50f722c, type: 2}
   cookingTime: 2
   category: 0

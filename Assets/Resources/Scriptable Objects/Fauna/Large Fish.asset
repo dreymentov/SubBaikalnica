@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Large Fish
   m_EditorClassIdentifier: 
   id: 0
-  itemType: 0
+  itemType: 2
   size: {x: 3, y: 3}
   sprite: {fileID: 21300000, guid: af7feed8c4bb0564cbba00568488ecf3, type: 3}
   worldPrefab: {fileID: 6299768815509285028, guid: de5c01f8109974941aa9f852aba0edf7, type: 3}

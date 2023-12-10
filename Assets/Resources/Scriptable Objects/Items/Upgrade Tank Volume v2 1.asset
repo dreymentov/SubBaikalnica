@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade Tank Volume v2 1
   m_EditorClassIdentifier: 
   id: 16
-  itemType: 0
+  itemType: 4
   size: {x: 2, y: 2}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 8175704146847461129, guid: c6ba8ad27482cbb46b682d1721073c5f, type: 3}

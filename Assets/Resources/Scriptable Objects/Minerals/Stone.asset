@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Stone
   m_EditorClassIdentifier: 
   id: 19
-  itemType: 0
+  itemType: 3
   size: {x: 1, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 468911908972734196, guid: efaa89817b5f8254ab75cdd5f9e6c38e, type: 3}

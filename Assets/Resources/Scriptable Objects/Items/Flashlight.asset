@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Flashlight
   m_EditorClassIdentifier: 
   id: 10
-  itemType: 0
+  itemType: 1
   size: {x: 1, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 4153811709145368746, guid: 9f398e6935d744c48aa95ff87a28a17e, type: 3}

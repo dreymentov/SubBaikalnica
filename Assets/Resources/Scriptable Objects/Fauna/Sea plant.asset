@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Sea plant
   m_EditorClassIdentifier: 
   id: 2
-  itemType: 0
+  itemType: 2
   size: {x: 1, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 767936901736674918, guid: 415b4ce9859c15c498d7279af65fffcc, type: 3}

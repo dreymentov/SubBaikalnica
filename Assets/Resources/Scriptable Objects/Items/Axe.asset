@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Axe
   m_EditorClassIdentifier: 
   id: 8
-  itemType: 0
+  itemType: 1
   size: {x: 1, y: 2}
-  sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  sprite: {fileID: 1034537400385087400, guid: 81f6861e3134b534abc7577e1c6bf286, type: 3}
   worldPrefab: {fileID: 8655076462156537353, guid: 71b599c0aff62854e931363923e05d10, type: 3}
   description: 
   scannable: 0

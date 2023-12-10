@@ -247,6 +247,8 @@ public class InventorySystem : UIBaseClass
     //function to assign or disassign hotbar slots and has assigning logic for the slots
     public void AssignItemToHotbar(ItemScriptableObject item, int slotNum)
     {
+        Debug.Log("Try");
+
         //exits function if the item is not equipable to the hotbar
         if (!IsHotbarEquippable(item))
         {

@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ce8c5473c617fa4bbf854f89adae254, type: 3}
-  m_Name: Copper
+  m_Name: Fried Fish 1
   m_EditorClassIdentifier: 
-  id: 17
-  itemType: 3
+  id: 11
+  itemType: 4
   size: {x: 1, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  worldPrefab: {fileID: 468911908972734196, guid: 9e26c1c5fd4b8134c9c669f43f14a68a, type: 3}
+  worldPrefab: {fileID: 4760247886176670627, guid: a17a3c6c131db7d459ae500bcb5be04e, type: 3}
   description: 
   scannable: 0
   scanPercentage: 0

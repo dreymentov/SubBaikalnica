@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Camera
   m_EditorClassIdentifier: 
   id: 9
-  itemType: 0
+  itemType: 1
   size: {x: 1, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 134602756981839761, guid: dac839aa77836874ead5b7ca7dd340b2, type: 3}

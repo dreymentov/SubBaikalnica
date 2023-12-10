@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Wood
   m_EditorClassIdentifier: 
   id: 4
-  itemType: 0
+  itemType: 2
   size: {x: 2, y: 1}
   sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   worldPrefab: {fileID: 220355003424581497, guid: a24d5de1f0c657f428cd87d1e2ac755b, type: 3}
